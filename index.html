@@ -1,0 +1,72 @@
+<canvas id="gameCanvas" style="border: 1px solid black;"></canvas>
+<div id="score" style="font-size: 20px; margin-top: 10px;">Score: 0</div>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let bubbles = [];
+    let score = 0;
+
+    class Bubble {
+        constructor(x, y, radius, speed) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.speed = speed;
+            this.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+        update() {
+            this.y -= this.speed;
+            if (this.y + this.radius < 0) {
+                this.y = canvas.height + this.radius;
+                this.x = Math.random() * canvas.width;
+            }
+            this.draw();
+        }
+    }
+
+    function spawnBubble() {
+        const radius = Math.random() * 30 + 10;
+        const x = Math.random() * (canvas.width - radius * 2) + radius;
+        const y = canvas.height + radius;
+        const speed = Math.random() * 2 + 1;
+        bubbles.push(new Bubble(x, y, radius, speed));
+    }
+
+    function animate() {
+        // Set the background color to deep blue
+        ctx.fillStyle = '#00008B'; // Deep blue color
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        bubbles.forEach((bubble, index) => {
+            bubble.update();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    function popBubble(event) {
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        bubbles.forEach((bubble, index) => {
+            const dist = Math.hypot(mouseX - bubble.x, mouseY - bubble.y);
+            if (dist < bubble.radius) {
+                bubbles.splice(index, 1);
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+            }
+        });
+    }
+
+    canvas.addEventListener('click', popBubble);
+    setInterval(spawnBubble, 1000);
+    animate();
+</script>
